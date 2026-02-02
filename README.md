@@ -47,7 +47,7 @@ Aligns visual differences with LLM-driven textual intent.
 <details>
 <summary><b>Click to expand architecture (Figure 3)</b></summary>
 
-![Stage 2]([stage2.jpg](https://github.com/anonymous1-cloud/SemAlign-GUI/blob/main/stage2.jpg))
+![Stage 2]([https://github.com/anonymous1-cloud/SemAlign-GUI/blob/main/stage2.jpg])
 *Employes Adaptive Gated Fusion (AGF) to dynamically integrate visual, textual, and structural information.*
 </details>
 
@@ -62,16 +62,16 @@ Enforces precise phrase-to-patch localization.
 
 ---
 
-## 💾 Dataset: CoD-GUI
+## 📥 Resources & Downloads
 
-We introduce **CoD-GUI** (Component-oriented Description for GUI), a rigorous dataset derived from Rico-Topic.
+To facilitate reproducibility, we provide both the curated dataset and the pre-trained model weights.
 
-| Statistic | Count/Details |
-| :--- | :--- |
-| **Total Samples** | 45,940 Component-level pairs |
-| **Data Format** | HDF5 (Serialized) |
-| **Annotations** | Pixel-level masks, Coordinates, Natural Language Descriptions |
-| **Download** | **[🔗 Link to Dataset](#)** |
+| Resource | Description | Download Link |
+| :--- | :--- | :---: |
+| **📦 Model Weights** | Pre-trained checkpoints for SemAlign-GUI (Stage 1-3). | [**[`Google Drive`]**](你的模型权重链接在这里) |
+| **💾 CoD-GUI Dataset** | 45,940 samples with masks, coordinates & intent descriptions. | [**[`Google Drive`]**](你的数据集链接在这里) |
+
+> **Note:** The model weights are saved as `.pth` files. Please refer to the [Usage](#-usage) section for loading instructions.
 
 ---
 
