@@ -1,6 +1,6 @@
 # SemAlign-GUI: Semantic-Aware GUI Change Understanding
 
-![Overall Framework](overall.jpg)
+![Overall Framework](https://github.com/anonymous1-cloud/SemAlign-GUI/blob/main/overall.jpg)
 
 <div align="center">
 
@@ -8,7 +8,7 @@
 
 [![Paper]()](你的论文链接)
 [![Dataset](https://img.shields.io/badge/Dataset-CoD--GUI-blue.svg)](#-dataset-cod-gui)
-[![Framework](https://github.com/anonymous1-cloud/SemAlign-GUI/blob/main/overall.jpg)](#-implementation)
+[![Framework]()](#-implementation)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 </div>
