@@ -68,8 +68,8 @@ To facilitate reproducibility, we provide both the curated dataset and the pre-t
 
 | Resource | Description | Download Link |
 | :--- | :--- | :---: |
-| **📦 Model Weights** | Pre-trained checkpoints for SemAlign-GUI (Stage 1-3). | [**[`Google Drive`]**](你的模型权重链接在这里) |
-| **💾 CoD-GUI Dataset** | 45,940 samples with masks, coordinates & intent descriptions. | [**[`Google Drive`]**](你的数据集链接在这里) |
+| **📦 Model Weights** | Pre-trained checkpoints for SemAlign-GUI (Stage 1-3). | [**[`Google Drive`]**](https://drive.google.com/drive/folders/1J03diDpOSkJ9r-lotfh8j0vKGTi0FKHh) |
+| **💾 CoD-GUI Dataset** | 45,940 samples with masks, coordinates & intent descriptions. | [**[`Google Drive`]**](https://drive.google.com/drive/folders/1J03diDpOSkJ9r-lotfh8j0vKGTi0FKHh) |
 
 > **Note:** The model weights are saved as `.pth` files. Please refer to the [Usage](#-usage) section for loading instructions.
 
