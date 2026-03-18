@@ -47,7 +47,7 @@ Aligns visual differences with LLM-driven textual intent.
 <details>
 <summary><b>Click to expand architecture (Figure 3)</b></summary>
 
-![Stage 2](https://github.com/anonymous1-cloud/SemAlign-GUI/blob/main/stage2.jpg)
+![Stage 2](https://github.com/anonymous1-cloud/SemAlign-GUI/blob/main/SemAlign-GUI/stage2%20(1).jpg)
 *Employes Adaptive Gated Fusion (AGF) to dynamically integrate visual, textual, and structural information.*
 </details>
 
@@ -56,7 +56,7 @@ Enforces precise phrase-to-patch localization.
 <details>
 <summary><b>Click to expand architecture (Figure 4)</b></summary>
 
-![Stage 3](https://github.com/anonymous1-cloud/SemAlign-GUI/blob/main/stage3.jpg)
+![Stage 3](https://github.com/anonymous1-cloud/SemAlign-GUI/blob/main/SemAlign-GUI/stage3%20(1).jpg)
 *Uses Phrase-Patch Contrastive Learning (PPCL) to map abstract semantics to specific visual regions.*
 </details>
 
