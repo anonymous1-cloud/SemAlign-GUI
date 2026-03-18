@@ -1,6 +1,6 @@
 # SemAlign-GUI: Semantic-Aware GUI Change Understanding
 
-![Overall Framework](https://github.com/anonymous1-cloud/SemAlign-GUI/blob/main/overall.jpg)
+![Overall Framework](https://github.com/anonymous1-cloud/SemAlign-GUI/blob/main/SemAlign-GUI/overall%20(1).jpg)
 
 <div align="center">
 
@@ -38,7 +38,7 @@ Establishes a robust visual foundation by modeling pixel-level evolution pattern
 <details>
 <summary><b>Click to expand architecture (Figure 2)</b></summary>
 
-![Stage 1](https://github.com/anonymous1-cloud/SemAlign-GUI/blob/main/stage1.jpg)
+![Stage 1](https://github.com/anonymous1-cloud/SemAlign-GUI/blob/main/SemAlign-GUI/stage%20(1).jpg)
 *Uses a Temporal Relation Module (TRM) to capture dynamic associations and filter non-semantic noise.*
 </details>
 
