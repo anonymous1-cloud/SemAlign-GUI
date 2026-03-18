@@ -2,239 +2,162 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from transformers import AutoModel, AutoConfig
-from typing import Tuple, Optional
-import math
+from typing import Tuple, Dict
 
 
 class TemporalRelationModule(nn.Module):
-    """时序关系模块：捕捉GUI变化的时间模式"""
+    """
+    TRM 模块：处理 Patch 级别的时序交互。
+    对应论文描述：4层 Transformer Encoder, 8个注意头, 可学习时间嵌入。
+    """
 
-    def __init__(self, hidden_dim: int, num_heads: int = 8, temporal_window: int = 3):
+    def __init__(self, hidden_dim: int, num_heads: int = 8, num_layers: int = 4):
         super().__init__()
         self.hidden_dim = hidden_dim
-        self.num_heads = num_heads
-        self.temporal_window = temporal_window
 
-        # 时序自注意力
-        self.temporal_attention = nn.MultiheadAttention(
-            embed_dim=hidden_dim,
-            num_heads=num_heads,
-            batch_first=True,
-            dropout=0.1
+        # 1. 可学习的时间嵌入 E_t=0 和 E_t=1 (对应论文 3.2 节)
+        # Shape: [2, 1, hidden_dim]，自动广播到 [B, N, D]
+        self.temporal_embeddings = nn.Parameter(torch.randn(2, 1, hidden_dim))
+
+        # 2. 交叉帧自注意力 (MHSA) 序列建模
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=hidden_dim,
+            nhead=num_heads,
+            dim_feedforward=hidden_dim * 4,
+            dropout=0.1,
+            activation='gelu',
+            batch_first=True
         )
+        self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
 
-        # 位置编码（时序）
-        self.temporal_pos_encoding = nn.Parameter(
-            torch.randn(1, temporal_window, hidden_dim) * 0.02
-        )
-
-        # 时序卷积捕获局部模式
-        self.temporal_conv = nn.Sequential(
-            nn.Conv1d(hidden_dim, hidden_dim, kernel_size=3, padding=1),
-            nn.BatchNorm1d(hidden_dim),
-            nn.GELU(),
-            nn.Conv1d(hidden_dim, hidden_dim, kernel_size=3, padding=1),
-            nn.BatchNorm1d(hidden_dim),
-            nn.GELU()
-        )
-
-        # 门控机制融合
-        self.gate = nn.Sequential(
-            nn.Linear(hidden_dim * 2, hidden_dim),
-            nn.Sigmoid()
-        )
-
-        # 归一化
-        self.norm1 = nn.LayerNorm(hidden_dim)
-        self.norm2 = nn.LayerNorm(hidden_dim)
-
-        # FFN
-        self.ffn = nn.Sequential(
-            nn.Linear(hidden_dim, hidden_dim * 4),
-            nn.GELU(),
-            nn.Dropout(0.1),
-            nn.Linear(hidden_dim * 4, hidden_dim),
-            nn.Dropout(0.1)
-        )
-
-    def forward(self, features: torch.Tensor) -> torch.Tensor:
+    def forward(self, ref_patches: torch.Tensor, tar_patches: torch.Tensor) -> torch.Tensor:
         """
         Args:
-            features: [B, D] 当前时刻的特征
+            ref_patches: [B, N, D] (N=196, D=768)
+            tar_patches: [B, N, D]
         Returns:
-            enhanced: [B, D] 增强后的特征
+            diff_patches: [B, N, D] 经过对齐交互后的差异特征
         """
-        batch_size = features.shape[0]
+        # 注入时间箭头 (Arrow of Time)
+        ref_encoded = ref_patches + self.temporal_embeddings[0]
+        tar_encoded = tar_patches + self.temporal_embeddings[1]
 
-        # 扩展为时序序列（模拟多时刻）
-        seq_length = self.temporal_window
+        # 拼接为联合序列 [B, 2*N, D]
+        # 让 ref 和 tar 的 patch 在注意力机制中寻找语义对应点
+        temporal_seq = torch.cat([ref_encoded, tar_encoded], dim=1)
 
-        # 创建时序序列
-        if seq_length > 1:
-            # 通过不同线性变换模拟多个时刻
-            temporal_seq = []
-            for i in range(seq_length):
-                weight = torch.eye(self.hidden_dim, device=features.device) + \
-                         torch.randn_like(torch.eye(self.hidden_dim, device=features.device)) * 0.01
-                temporal_seq.append(torch.matmul(features, weight))
-            temporal_seq = torch.stack(temporal_seq, dim=1)  # [B, T, D]
-        else:
-            temporal_seq = features.unsqueeze(1)  # [B, 1, D]
+        # 核心：跨帧交互 (Global Cross-frame Interactions)
+        enhanced_seq = self.transformer_encoder(temporal_seq)
 
-        # 添加位置编码
-        temporal_seq = temporal_seq + self.temporal_pos_encoding[:, :temporal_seq.size(1), :]
+        # 拆分回原状态
+        N = ref_patches.shape[1]
+        ref_enhanced = enhanced_seq[:, :N, :]
+        tar_enhanced = enhanced_seq[:, N:, :]
 
-        # 时序自注意力
-        attn_output, attn_weights = self.temporal_attention(
-            query=temporal_seq,
-            key=temporal_seq,
-            value=temporal_seq
-        )
-
-        # 残差连接 + 归一化
-        temporal_seq = self.norm1(temporal_seq + attn_output)
-
-        # 时序卷积
-        conv_input = temporal_seq.transpose(1, 2)  # [B, D, T]
-        conv_output = self.temporal_conv(conv_input)  # [B, D, T]
-        conv_output = conv_output.transpose(1, 2)  # [B, T, D]
-
-        # 门控融合
-        gate_input = torch.cat([temporal_seq, conv_output], dim=-1)
-        gate = self.gate(gate_input)
-        fused = gate * temporal_seq + (1 - gate) * conv_output
-
-        # FFN
-        ffn_output = self.ffn(fused)
-        fused = self.norm2(fused + ffn_output)
-
-        # 提取当前时刻特征（最后一个时间步）
-        if fused.size(1) > 1:
-            current_feat = fused[:, -1, :]  # 取最后一个作为当前时刻
-        else:
-            current_feat = fused.squeeze(1)
-
-        return current_feat
+        # 潜空间语义相减 (Latent Space Subtraction)
+        # 此时的相减是基于对齐后的特征，能有效过滤渲染抖动
+        diff_patches = tar_enhanced - ref_enhanced
+        return diff_patches
 
 
 class VisualFeatureExtractor(nn.Module):
-    """视觉特征提取器（集成时序关系模块）"""
+    """
+    视觉特征提取器：负责从 ViT 提取 Patch 特征并生成 Dense Mask。
+    """
 
     def __init__(self, model_path: str, config):
         super().__init__()
         self.config = config
 
-        # 加载预训练ViT
-        vit_config = AutoConfig.from_pretrained(
-            model_path,
-            hidden_size=1024,
-            num_attention_heads=16,
-            num_hidden_layers=24,
-            intermediate_size=4096
-        )
+        # 加载预训练 ViT (ViT-B/16)
+        vit_config = AutoConfig.from_pretrained(model_path)
+        self.vit = AutoModel.from_pretrained(model_path, config=vit_config)
 
-        self.vit = AutoModel.from_pretrained(
-            model_path,
-            config=vit_config,
-            ignore_mismatched_sizes=True
-        )
+        # 投影层：将 ViT 输出映射到隐藏维度
+        self.projection = nn.Linear(vit_config.hidden_size, config.hidden_dim)
 
-        if config.gradient_checkpointing:
-            self.vit.gradient_checkpointing_enable()
-
-        # 投影到统一维度
-        self.projection = nn.Sequential(
-            nn.LayerNorm(1024),
-            nn.Linear(1024, config.hidden_dim),
-            nn.GELU(),
-            nn.Dropout(0.1)
-        )
-
-        # 时序关系模块
+        # 时序关系模块 (TRM)
         self.temporal_module = TemporalRelationModule(
             hidden_dim=config.hidden_dim,
             num_heads=8,
-            temporal_window=3
+            num_layers=4
         )
 
-        # 变化检测头（logits输出）
-        self.change_detector = nn.Sequential(
-            nn.Conv2d(config.hidden_dim, 128, kernel_size=3, padding=1),
+        # 密集预测解码器 (对应论文中的 Transposed Convolutional Layers)
+        # 从 14x14 逐步上采样回 224x224
+        self.decoder = nn.Sequential(
+            nn.ConvTranspose2d(config.hidden_dim, 256, kernel_size=4, stride=2, padding=1),  # 14 -> 28
+            nn.BatchNorm2d(256),
+            nn.ReLU(inplace=True),
+            nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1),  # 28 -> 56
             nn.BatchNorm2d(128),
-            nn.ReLU(),
-            nn.Conv2d(128, 64, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1),  # 56 -> 112
             nn.BatchNorm2d(64),
-            nn.ReLU(),
-            nn.Conv2d(64, 1, kernel_size=1)
+            nn.ReLU(inplace=True),
+            nn.ConvTranspose2d(64, 1, kernel_size=4, stride=2, padding=1)  # 112 -> 224
         )
 
     def forward(self, ref_image: torch.Tensor, tar_image: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         batch_size = ref_image.shape[0]
-
-        # 提取特征
         images = torch.cat([ref_image, tar_image], dim=0)
 
-        with torch.amp.autocast('cuda', enabled=self.training):
-            vit_output = self.vit(pixel_values=images)
-            features = vit_output.last_hidden_state[:, 0]  # [CLS] token
+        # 提取 ViT 特征 [2*B, 197, 768] (包含 CLS)
+        outputs = self.vit(pixel_values=images)
+        # 丢弃 CLS token，保留全量 Patch 特征 [2*B, 196, 768]
+        all_patch_features = outputs.last_hidden_state[:, 1:, :]
 
-        # 分离参考和目标特征
-        ref_features = features[:batch_size]
-        tar_features = features[batch_size:]
+        # 分离并投影到 hidden_dim
+        all_proj = self.projection(all_patch_features)
+        ref_patches = all_proj[:batch_size]
+        tar_patches = all_proj[batch_size:]
 
-        # 投影到统一维度
-        ref_proj = self.projection(ref_features)
-        tar_proj = self.projection(tar_features)
+        # --- TRM 核心流程 ---
+        diff_patches = self.temporal_module(ref_patches, tar_patches)
 
-        # 时序关系处理
-        ref_temporal = self.temporal_module(ref_proj)
-        tar_temporal = self.temporal_module(tar_proj)
+        # 空间特征重建：[B, 196, D] -> [B, D, 14, 14]
+        B, N, D = diff_patches.shape
+        spatial_features = diff_patches.transpose(1, 2).view(B, D, 14, 14)
 
-        # 计算差异特征
-        diff_features = tar_temporal - ref_temporal
+        # 生成密集变化 mask (M_pred)
+        pred_mask_logits = self.decoder(spatial_features)
 
-        # 重建空间特征用于变化检测
-        spatial_diff = diff_features.unsqueeze(-1).unsqueeze(-1)  # [B, D, 1, 1]
-        spatial_diff = spatial_diff.repeat(1, 1, 14, 14)  # ViT的patch数
+        # 全局差异向量 (用于后续 AGF 模块和全局分类)
+        # 对 Patch 取平均以获得全局表征
+        global_diff = diff_patches.mean(dim=1)
 
-        # 生成变化mask（logits）
-        change_logits = self.change_detector(spatial_diff)
-        change_logits = F.interpolate(change_logits, size=(224, 224), mode='bilinear')
-
-        return diff_features, change_logits.squeeze(1)
+        return global_diff, pred_mask_logits.squeeze(1)
 
 
 class Stage1VisualModel(nn.Module):
-    """第一阶段：纯视觉模型（集成时序关系）"""
+    """
+    第一阶段完整模型：整合视觉提取与多任务输出。
+    """
 
     def __init__(self, config):
         super().__init__()
         self.config = config
-
-        # 视觉编码器（含时序关系）
         model_path = f"{config.model_root}/{config.image_model}"
+
         self.visual_encoder = VisualFeatureExtractor(model_path, config)
 
-        # 变化分类器（logits输出）
+        # 全局变化分类器 (p_change)
         self.change_classifier = nn.Sequential(
             nn.Linear(config.hidden_dim, 256),
-            nn.BatchNorm1d(256),
-            nn.ReLU(),
+            nn.ReLU(inplace=True),
             nn.Dropout(0.2),
-            nn.Linear(256, 128),
-            nn.ReLU(),
-            nn.Linear(128, 1)
+            nn.Linear(256, 1)
         )
 
-    def forward(self, ref_image: torch.Tensor, tar_image: torch.Tensor):
-        # 提取视觉差异特征
-        diff_features, pred_logits = self.visual_encoder(ref_image, tar_image)
+    def forward(self, ref_image: torch.Tensor, tar_image: torch.Tensor) -> Dict[str, torch.Tensor]:
+        # 1. 提取视觉差异特征与密集 Mask 预测
+        diff_features, pred_mask_logits = self.visual_encoder(ref_image, tar_image)
 
-        # 预测是否有变化（logits）
+        # 2. 预测全局变化概率 (p_change)
         change_logits = self.change_classifier(diff_features)
 
         return {
-            'diff_features': diff_features,
-            'pred_logits': pred_logits,
-            'change_logits': change_logits
+            'diff_features': diff_features,  # 用于 AGF 模块
+            'pred_mask_logits': pred_mask_logits,  # 用于 L_mask (BCE Loss)
+            'change_logits': change_logits  # 用于 L_cls (Classification Loss)
         }
