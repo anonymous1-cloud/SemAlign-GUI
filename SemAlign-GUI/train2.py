@@ -11,6 +11,7 @@ import numpy as np
 import time
 import os
 import sys
+import random  # [新增] 导入random库用于固定种子
 from tqdm import tqdm
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -19,6 +20,28 @@ from config import config
 from dataloder import create_data_loader
 from model2 import Stage2AlignmentModel
 from memory import memory_monitor
+
+
+# ==========================================
+# [新增] 工业级固定随机种子函数
+# ==========================================
+def set_seed(seed: int = 42):
+    """设置全局随机种子以确保实验完全可复现"""
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)  # 针对多GPU DDP
+
+    # 强制 cuDNN 使用确定性算法，牺牲一点点速度换取绝对的可复现性
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    print(f"\n[*] 成功固定全局随机种子为: {seed}")
+    print(f"[*] cuDNN 确定性模式已开启 (Deterministic=True)")
+
+
+# ==========================================
 
 
 class Stage2AlignmentTrainer:
@@ -706,7 +729,17 @@ def main():
     parser.add_argument('--epochs', type=int, default=None, help='训练轮数')
     parser.add_argument('--batch-size', type=int, default=None, help='batch size')
 
+    # [新增] 全局随机种子参数设置，默认设定为 42
+    parser.add_argument('--seed', type=int, default=42, help='全局随机种子 (默认: 42)')
+
     args = parser.parse_args()
+
+    # [新增] 在程序最开头调用固定随机种子函数！
+    set_seed(args.seed)
+
+    # 也可以将seed存入config中，方便记录和排查
+    if hasattr(config, 'seed'):
+        config.seed = args.seed
 
     # 更新配置
     if args.epochs:
