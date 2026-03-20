@@ -82,10 +82,10 @@ SemAlign-GUI achieves a new state-of-the-art on the CoD-GUI benchmark.
 ### Automated Metrics
 | Method | F1-Score | IoU | Accuracy |
 | :--- | :---: | :---: | :---: |
-| ChangeFormer (Vision-only) | 0.679 | 0.561 | 0.743 |
+| ChangeFormer (Vision-only) | 0.698 | 0.586 | 0.760 |
 | UI-BERT (Static Multimodal) | 0.742 | 0.630 | 0.800 |
-| GPT-4o (Foundation Model) | 0.737 | 0.609 | 0.786 |
-| **SemAlign-GUI (Ours)** | **0.889** | **0.824** | **0.926** |
+| GPT-4o (Foundation Model) | 0.742 | 0.621 | 0.791 |
+| **SemAlign-GUI (Ours)** | **0.812** | **0.716** | **0.855** |
 
 ### Visualization
 <details>
