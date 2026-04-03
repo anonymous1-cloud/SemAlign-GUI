@@ -17,10 +17,15 @@
 
 ## 📖 Introduction
 
-**SemAlign-GUI** is a unified framework accepted at **EASE '26**. It redefines GUI change detection as a progressive **multimodal alignment process**, moving beyond brittle pixel comparisons and static vision-language models.
+In rapid agile and DevOps cycles, frequent GUI evolution has become the norm, placing a heavy burden on test maintenance. Relying solely on manual verification is impractical — we need automated interpretation of the functional intent behind visual changes.
 
-In the era of Agile and DevOps, traditional tools struggle with rendering noise, and generic VLMs (like GPT-4o) lack fine-grained localization. SemAlign-GUI bridges this "semantic gap" by understanding **what changed**, **where it changed**, and **why**.
+Existing methods struggle to bridge the semantic gap:
 
+Traditional tools are brittle to rendering noise.
+
+Generic vision‑language models (e.g., GPT‑4o) lack fine‑grained localization.
+
+To address these challenges, we propose SemAlign-GUI, a unified framework that redefines GUI change detection as progressive multimodal alignment. 
 **✨ Key Contributions:**
 * **TRM (Visual-Temporal):** Filters rendering noise via dynamic evolution patterns.
 * **AGF (Semantic Alignment):** Fuses visual differences with user intent using adaptive gating.
