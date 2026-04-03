@@ -97,7 +97,7 @@ SemAlign-GUI achieves a new state-of-the-art on the CoD-GUI benchmark.
 <details>
 <summary><b>View Qualitative Results (Figure 5)</b></summary>
 
-![Qualitative Analysis](form.png)
+![Qualitative Analysis](https://github.com/anonymous1-cloud/SemAlign-GUI/blob/main/SemAlign-GUI/form.png)
 *Visualization of verification reports. SemAlign-GUI precisely identifies component shifts (blue arrows) and structural changes.*
 </details>
 
