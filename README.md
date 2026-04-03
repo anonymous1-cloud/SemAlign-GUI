@@ -25,7 +25,8 @@ Traditional tools are brittle to rendering noise.
 
 Generic vision‑language models (e.g., GPT‑4o) lack fine‑grained localization.
 
-To address these challenges, we propose SemAlign-GUI, a unified framework that redefines GUI change detection as progressive multimodal alignment. 
+To address these challenges, we propose SemAlign-GUI, a unified framework that redefines GUI change detection as progressive multimodal alignment. We also release CoD-GUI, a rigorous component detection dataset comprising 45,940 component‑level samples with multimodal annotations.
+
 **✨ Key Contributions:**
 * **TRM (Visual-Temporal):** Filters rendering noise via dynamic evolution patterns.
 * **AGF (Semantic Alignment):** Fuses visual differences with user intent using adaptive gating.
@@ -96,7 +97,7 @@ SemAlign-GUI achieves a new state-of-the-art on the CoD-GUI benchmark.
 <details>
 <summary><b>View Qualitative Results (Figure 5)</b></summary>
 
-![Qualitative Analysis](form.jpg)
+![Qualitative Analysis](form.png)
 *Visualization of verification reports. SemAlign-GUI precisely identifies component shifts (blue arrows) and structural changes.*
 </details>
 
