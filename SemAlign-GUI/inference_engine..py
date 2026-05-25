@@ -39,7 +39,7 @@ class SemAlignEngine:
         # 简单的索引库 (用于任务二)
         self.retrieval_index = []
 
-        print("✅ 模型加载完成")
+        print(" 模型加载完成")
 
     def _preprocess_image(self, image_path: str) -> torch.Tensor:
         image = Image.open(image_path).convert('RGB')
