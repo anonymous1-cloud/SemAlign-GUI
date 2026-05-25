@@ -103,7 +103,7 @@ class Stage3PhraseTrainer:
 
         # 检查检查点
         if not Path(stage2_checkpoint).exists():
-            print(f"⚠️ 警告：找不到stage2检查点 {stage2_checkpoint}")
+            print(f" 警告：找不到stage2检查点 {stage2_checkpoint}")
             print("将使用随机初始化的Stage2模型")
 
         self.stage2_checkpoint = stage2_checkpoint
@@ -598,7 +598,7 @@ class Stage3PhraseTrainer:
                         'step': self.global_step
                     })
 
-                print(f"✅ 保存可视化: {viz_path}")
+                print(f" 保存可视化: {viz_path}")
 
         except Exception as e:
             print(f"可视化保存失败: {e}")
@@ -734,7 +734,7 @@ class Stage3PhraseTrainer:
                 checkpoint_path = self.checkpoint_dir / f"checkpoint_epoch_{self.current_epoch}_step_{self.global_step}.pt"
 
             torch.save(checkpoint, checkpoint_path)
-            print(f"✅ 保存检查点: {checkpoint_path}")
+            print(f" 保存检查点: {checkpoint_path}")
 
             # 保存配置
             config_path = self.checkpoint_dir / "config.json"
@@ -746,7 +746,7 @@ class Stage3PhraseTrainer:
             if is_best:
                 best_path = self.checkpoint_dir / "best_model.pt"
                 torch.save(checkpoint, best_path)
-                print(f"🎉 保存最佳模型: {best_path}")
+                print(f" 保存最佳模型: {best_path}")
 
                 # 导出为部署格式
                 self.export_model()
@@ -767,7 +767,7 @@ class Stage3PhraseTrainer:
                 'best_val_loss': self.best_val_loss,
                 'best_alignment_score': self.best_alignment_score
             }, export_path)
-            print(f"✅ 模型导出到: {export_path}")
+            print(f" 模型导出到: {export_path}")
         except Exception as e:
             print(f"模型导出失败: {e}")
 
@@ -819,7 +819,7 @@ class Stage3PhraseTrainer:
                     self.best_alignment_score = val_metrics['alignment_score']
                     self.best_val_loss = val_metrics['val_loss']
                     self.save_checkpoint(is_best=True, suffix="best")
-                    print(f"🎉 新的最佳模型！对齐分数: {self.best_alignment_score:.4f}")
+                    print(f" 新的最佳模型！对齐分数: {self.best_alignment_score:.4f}")
 
                 # 保存定期检查点
                 if (epoch + 1) % 5 == 0 or epoch == self.stage3_config['stage3_epochs'] - 1:
