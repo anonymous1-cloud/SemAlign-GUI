@@ -23,7 +23,7 @@ sys.path.append('.')
 try:
     from config3 import get_full_config
 except ImportError as e:
-    print(f"❌ 无法导入配置: {e}")
+    print(f" 无法导入配置: {e}")
     sys.exit(1)
 
 # ---------- 颜色映射 ----------
@@ -431,7 +431,7 @@ class FixedGUIPreprocessor:
         """流式处理所有数据"""
         text_dir = Path(self.cfg['data']['text_dir'])
         if not text_dir.exists():
-            print(f"❌ 文本目录不存在: {text_dir}")
+            print(f" 文本目录不存在: {text_dir}")
             return []
 
         json_files = list(text_dir.glob('*.json'))
@@ -491,9 +491,9 @@ class FixedGUIPreprocessor:
                     all_meta_files.append(meta_file)
 
                     # 打印统计信息
-                    print(f"  ✅ 完成: {len(meta_list)}个样本")
-                    print(f"  📊 参考组件平均: {sum(len(m['reference_components']) for m in meta_list) / len(meta_list):.1f}")
-                    print(f"  📊 目标组件平均: {sum(len(m['target_components']) for m in meta_list) / len(meta_list):.1f}")
+                    print(f"   完成: {len(meta_list)}个样本")
+                    print(f"   参考组件平均: {sum(len(m['reference_components']) for m in meta_list) / len(meta_list):.1f}")
+                    print(f"   目标组件平均: {sum(len(m['target_components']) for m in meta_list) / len(meta_list):.1f}")
 
                     # 验证几个样本的坐标
                     for i, meta in enumerate(meta_list[:3]):
@@ -506,10 +506,10 @@ class FixedGUIPreprocessor:
                 h5_storage.close()
 
             except Exception as e:
-                print(f"❌ 处理类别 {class_name} 时出错: {e}")
+                print(f" 处理类别 {class_name} 时出错: {e}")
                 continue
 
-        print(f"\n✅ 所有类别处理完成，共生成 {len(all_meta_files)} 个元数据文件")
+        print(f"\n 所有类别处理完成，共生成 {len(all_meta_files)} 个元数据文件")
         return all_meta_files
 
 
@@ -553,7 +553,7 @@ class ClassAwareSplitter:
                 test_idx.extend(te)
 
             except Exception as e:
-                print(f"❌ 划分类别 {cls} 时出错: {e}")
+                print(f" 划分类别 {cls} 时出错: {e}")
                 continue
 
         # 打乱数据
@@ -566,12 +566,12 @@ class ClassAwareSplitter:
             output_file = out_dir / f"{name}.json"
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(lst, f, indent=2, ensure_ascii=False, default=str)
-            print(f"✅ {name}.json 保存完成，共 {len(lst)} 条样本")
+            print(f" {name}.json 保存完成，共 {len(lst)} 条样本")
 
             # 验证前几个样本
             if lst:
                 sample = lst[0]
-                print(f"  📋 {name}集样本示例:")
+                print(f"   {name}集样本示例:")
                 print(f"    类别: {sample.get('class_name')}")
                 print(f"    HDF5索引: {sample.get('hdf5_index')}")
                 print(f"    文本长度: {len(sample.get('differ_text', ''))}")
@@ -603,7 +603,7 @@ def main():
     output_dir = Path(cfg['data']['output_dir'])
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"🎯 GUI数据预处理开始")
+    print(f" GUI数据预处理开始")
     print(f"   图像目录: {cfg['data']['gui_dir']}")
     print(f"   文本目录: {cfg['data']['text_dir']}")
     print(f"   输出目录: {cfg['data']['output_dir']}")
@@ -612,7 +612,7 @@ def main():
     print(f"   调试模式: {args.debug}")
 
     if args.validate_only:
-        print("\n🔍 验证模式：检查数据完整性")
+        print("\n 验证模式：检查数据完整性")
         # 这里可以添加验证代码
         return
 
@@ -623,7 +623,7 @@ def main():
     meta_files = preprocessor.process_all_stream(debug=args.debug)
 
     if not meta_files:
-        print("❌ 没有生成有效的元数据文件")
+        print(" 没有生成有效的元数据文件")
         return
 
     # 划分数据集
