@@ -64,7 +64,7 @@ class IntegratedGUIAnalyzer:
                         state_dict = pickle.load(f)
 
             except Exception as e:
-                print(f"⚠️ 标准加载失败，尝试备选方法: {e}")
+                print(f"标准加载失败，尝试备选方法: {e}")
                 # 备选加载方法
                 try:
                     checkpoint = torch.load(STAGE1_MODEL, map_location=self.device,
@@ -76,11 +76,11 @@ class IntegratedGUIAnalyzer:
 
             if state_dict is not None:
                 self.stage1_model.load_state_dict(state_dict, strict=False)
-                print("✅ 第一阶段模型加载成功")
+                print("第一阶段模型加载成功")
             else:
-                print(f"⚠️ 无法加载模型权重")
+                print(f"无法加载模型权重")
         else:
-            print(f"⚠️ 第一阶段模型文件不存在: {STAGE1_MODEL}")
+            print(f"第一阶段模型文件不存在: {STAGE1_MODEL}")
 
         self.stage1_model.eval()
 
@@ -96,9 +96,9 @@ class IntegratedGUIAnalyzer:
             checkpoint = torch.load(STAGE2_MODEL, map_location=self.device, weights_only=False)
             state_dict = checkpoint.get('model_state_dict', checkpoint)
             self.stage2_model.load_state_dict(state_dict, strict=False)
-            print("✅ 第二阶段模型加载成功")
+            print("第二阶段模型加载成功")
         else:
-            print(f"⚠️ 第二阶段模型文件不存在: {STAGE2_MODEL}")
+            print(f"第二阶段模型文件不存在: {STAGE2_MODEL}")
 
         self.stage2_model.eval()
 
@@ -113,9 +113,9 @@ class IntegratedGUIAnalyzer:
             checkpoint = torch.load(STAGE3_MODEL, map_location=self.device, weights_only=False)
             state_dict = checkpoint.get('model_state_dict', checkpoint)
             self.stage3_model.load_state_dict(state_dict, strict=False)
-            print("✅ 第三阶段模型加载成功")
+            print("第三阶段模型加载成功")
         else:
-            print(f"⚠️ 第三阶段模型文件不存在: {STAGE3_MODEL}")
+            print(f"第三阶段模型文件不存在: {STAGE3_MODEL}")
 
         self.stage3_model.eval()
 
@@ -458,7 +458,7 @@ class IntegratedGUIAnalyzer:
             return results
 
         except Exception as e:
-            print(f"\n❌ 分析失败: {e}")
+            print(f"\n 分析失败: {e}")
             import traceback
             traceback.print_exc()
             return {'error': str(e)}
@@ -593,18 +593,18 @@ class IntegratedGUIAnalyzer:
     def generate_quality_summary(self, stats: Dict, visual_change: bool, validated: bool) -> str:
         """生成质量摘要"""
         if validated:
-            return f"✅ 验证通过：{stats['total_changes']}个变化与视觉检测一致"
+            return f" 验证通过：{stats['total_changes']}个变化与视觉检测一致"
 
         if stats['total_changes'] == 0 and not visual_change:
-            return "✅ 无变化检测"
+            return "无变化检测"
 
         if stats['total_changes'] == 0 and visual_change:
-            return "⚠️ 有视觉变化但无描述"
+            return "有视觉变化但无描述"
 
         if stats['total_changes'] > 0 and not visual_change:
-            return "⚠️ 有描述变化但无显著视觉变化"
+            return "有描述变化但无显著视觉变化"
 
-        return "❓ 变化需要进一步验证"
+        return "变化需要进一步验证"
 
     def create_integrated_visualization(self, results: Dict, output_prefix: str):
         """创建集成可视化报告"""
@@ -730,7 +730,7 @@ class IntegratedGUIAnalyzer:
             ax7 = plt.subplot(gs[2, 0])
             ax7.axis('off')
 
-            changes_text = "🔍 Detailed Changes\n"
+            changes_text = " Detailed Changes\n"
             changes_text += "=" * 20 + "\n\n"
 
             changes = results['detailed_changes']
@@ -752,14 +752,14 @@ class IntegratedGUIAnalyzer:
             ax8.axis('off')
 
             assessment = results['overall_assessment']
-            assessment_text = "✅ Overall Assessment\n"
+            assessment_text = "Overall Assessment\n"
             assessment_text += "=" * 20 + "\n\n"
 
             assessment_text += f"Alignment: {assessment['alignment_score']:.2%}\n"
             assessment_text += f"Phrase Alignment: {assessment['phrase_alignment_score']:.2%}\n"
             assessment_text += f"Overall Confidence: {assessment['overall_confidence']:.2%}\n\n"
 
-            assessment_text += f"Validation: {'✅ PASS' if assessment['change_validated'] else '❌ FAIL'}\n\n"
+            assessment_text += f"Validation: {'PASS' if assessment['change_validated'] else 'FAIL'}\n\n"
             assessment_text += f"Summary:\n{assessment['summary']}"
 
             color = self.colors['success'] if assessment['change_validated'] else self.colors['warning']
@@ -771,7 +771,7 @@ class IntegratedGUIAnalyzer:
             ax9 = plt.subplot(gs[2, 2])
             ax9.axis('off')
 
-            model_text = "🤖 Model Information\n"
+            model_text = "Model Information\n"
             model_text += "=" * 20 + "\n\n"
             model_text += f"Stage1: Visual Model\n"
             model_text += f"Stage2: Multi-modal Model\n"
@@ -804,10 +804,10 @@ class IntegratedGUIAnalyzer:
             plt.savefig(output_path, dpi=150, bbox_inches='tight')
             plt.close()
 
-            print(f"✅ 集成可视化报告保存: {output_path}")
+            print(f"集成可视化报告保存: {output_path}")
 
         except Exception as e:
-            print(f"❌ 可视化创建失败: {e}")
+            print(f"可视化创建失败: {e}")
             import traceback
             traceback.print_exc()
 
@@ -838,10 +838,10 @@ class IntegratedGUIAnalyzer:
             with open(json_path, 'w', encoding='utf-8') as f:
                 json.dump(serializable_results, f, indent=2, ensure_ascii=False)
 
-            print(f"✅ 分析结果保存: {json_path}")
+            print(f"分析结果保存: {json_path}")
 
         except Exception as e:
-            print(f"❌ 结果保存失败: {e}")
+            print(f"结果保存失败: {e}")
 
     def print_summary(self, results: Dict):
         """打印分析摘要"""
@@ -850,7 +850,7 @@ class IntegratedGUIAnalyzer:
         print(f"{'=' * 60}")
 
         # 基础信息
-        print(f"📁 图像:")
+        print(f"图像:")
         print(f"  参考: {Path(results['reference_image']).name}")
         print(f"  目标: {Path(results['target_image']).name}")
         print(f"  分析时间: {results['analysis_time']:.2f}秒")
@@ -863,7 +863,7 @@ class IntegratedGUIAnalyzer:
         print(f"  组件类型: {changes['component_type_distribution']}")
 
         # 阶段结果
-        print(f"\n🚀 阶段结果:")
+        print(f"\n阶段结果:")
         stage1_prob = results['stage1_results'].get('change_probability', 0)
         print(f"  Stage1 - 视觉变化概率: {stage1_prob:.2%}")
 
@@ -875,11 +875,11 @@ class IntegratedGUIAnalyzer:
 
         # 综合评估
         assessment = results['overall_assessment']
-        print(f"\n✅ 综合评估:")
+        print(f"\n 综合评估:")
         print(f"  对齐分数: {assessment['alignment_score']:.2%}")
         print(f"  短语对齐: {assessment['phrase_alignment_score']:.2%}")
         print(f"  整体置信度: {assessment['overall_confidence']:.2%}")
-        print(f"  验证结果: {'✅ PASS' if assessment['change_validated'] else '❌ FAIL'}")
+        print(f"  验证结果: {' PASS' if assessment['change_validated'] else ' FAIL'}")
         print(f"  总结: {assessment['summary']}")
 
 
@@ -938,11 +938,11 @@ def main():
         )
 
         if 'error' not in results:
-            print(f"\n✅ 分析完成!")
+            print(f"\n 分析完成!")
             print(f"  可视化报告已保存")
             print(f"  详细结果已保存")
         else:
-            print(f"\n❌ 分析失败: {results['error']}")
+            print(f"\n 分析失败: {results['error']}")
 
 
 if __name__ == "__main__":
