@@ -340,7 +340,7 @@ class Stage1Trainer:
             self.best_val_f1 = metrics['f1_score']
             self.best_val_loss = val_loss
             self.save_checkpoint(is_best=True)
-            print(f"✅ 新的最佳模型！F1: {self.best_val_f1:.4f}, Loss: {self.best_val_loss:.4f}")
+            print(f" 新的最佳模型！F1: {self.best_val_f1:.4f}, Loss: {self.best_val_loss:.4f}")
 
         self.model.train()
         return metrics
