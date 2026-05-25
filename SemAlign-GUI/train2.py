@@ -671,7 +671,7 @@ class Stage2AlignmentTrainer:
                     self.best_val_loss = val_metrics['val_loss']
                     self.patience_counter = 0
                     self.save_checkpoint(is_best=True, suffix="best")
-                    print(f"🎉 新的最佳模型！对齐分数: {self.best_alignment_score:.4f}")
+                    print(f" 新的最佳模型！对齐分数: {self.best_alignment_score:.4f}")
                 else:
                     self.patience_counter += 1
 
@@ -681,7 +681,7 @@ class Stage2AlignmentTrainer:
 
                 # 早停
                 if self.patience_counter >= self.max_patience:
-                    print(f"\n⚠️ 早停触发")
+                    print(f"\n 早停触发")
                     break
 
                 # 保存检查点
