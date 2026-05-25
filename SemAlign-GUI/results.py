@@ -71,7 +71,7 @@ class IntegratedGUIAnalyzer:
                                             weights_only=False, pickle_module=pickle)
                     state_dict = checkpoint.get('model_state_dict', checkpoint)
                 except:
-                    print(f"❌ 所有加载方法均失败")
+                    print(f" 所有加载方法均失败")
                     state_dict = None
 
             if state_dict is not None:
@@ -857,7 +857,7 @@ class IntegratedGUIAnalyzer:
 
         # 变化统计
         changes = results['detailed_changes']['statistics']
-        print(f"\n📊 变化统计:")
+        print(f"\n 变化统计:")
         print(f"  总变化: {changes['total_changes']}")
         print(f"  变化类型: {changes['change_type_distribution']}")
         print(f"  组件类型: {changes['component_type_distribution']}")
